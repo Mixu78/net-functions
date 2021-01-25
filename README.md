@@ -2,8 +2,6 @@
 
 [![NPM](https://nodei.co/npm/@rbxts/net-functions.png)](https://npmjs.org/package/@rbxts/net-functions)
 
-[@rbxts/eventemitter](https://npmjs.org/package/@rbxts/eventemitter) but with 100% more RemoteEvents
-
 ## Installation
 ```npm i @rbxts/net-functions```
 
@@ -46,7 +44,7 @@ const client = new Client(GameFunctions, GameFunctionsReturns, "id1");
 
 ## Example
 ```ts
-import { NetFunctionsServer as Server } from "..";
+import { NetFunctionsServer as Server } from "@rbxts/net-functions";
 import { t } from "@rbxts/t";
 
 const events = {
@@ -63,7 +61,7 @@ server.on("getData", (player, number, boolean) => {
 });
 ```
 ```ts
-import { NetFunctionsClient as Client } from "..";
+import { NetFunctionsClient as Client } from "@rbxts/net-functions";
 import { t } from "@rbxts/t";
 
 const events = {
