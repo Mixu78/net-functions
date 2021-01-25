@@ -1,63 +1,81 @@
-# @rbxts/net-eventemitter
+# @rbxts/net-functions
 
-[![NPM](https://nodei.co/npm/@rbxts/net-eventemitter.png)](https://npmjs.org/package/@rbxts/net-eventemitter)
+[![NPM](https://nodei.co/npm/@rbxts/net-functions.png)](https://npmjs.org/package/@rbxts/net-functions)
 
 [@rbxts/eventemitter](https://npmjs.org/package/@rbxts/eventemitter) but with 100% more RemoteEvents
 
 ## Installation
-```npm i @rbxts/net-eventemitter```
+```npm i @rbxts/net-functions```
 
 ## Usage
-First make an object with ```eventName: readonly t.check<any>[]``` pairs, for example
+First make two objects with ```eventName: readonly t.check<any>[]``` and ```eventName: t.check<any> | readonly t.check<any>[]``` pairs, for example
 ```ts
 import { t } from "@rbxts/t"
-const GameEvents = {
-	roundStart: [t.string, t.number] as const,
-	roundEnd: [t.string] as const,
+const GameFunctions = {
+	getData = [t.number, t.boolean] as const;
+	doThing = [] as const;
 }
+
+const GameFunctionsReturns = {
+	getData = t.string;
+	doThing = [t.number, t.string] as const;
+}
+
 ```
-Then create an emitter on both sides like so:
+Then create a server and client like so:
 ```ts
-import { ServerNetworkEmitter as Server } from "@rbxts/net-eventemitter";
+//server
+import { NetFunctionsServer as Server } from "@rbxts/net-functions";
 
-const Emitter = new Server(GameEvents);
+const server = new Server(GameFunctions, GameFunctionsReturns);
 ```
 ```ts
-import { ClientNetworkEmitter as Client } from "@rbxts/net-eventemitter";
+//client
+import { NetFunctionsClient as Client } from "@rbxts/net-functions";
 
-const Emitter = new Client(GameEvents);
+const client = new Client(GameFunctions, GameFunctionsReturns);
 ```
-where GameEvents is your event object.
+where GameFunctions is your event object, and GameFunctionsReturns contains event return checks.
 
-To handle wrong arguments sent by players pass in a function of type ```(eventName: string, player: Player, args: unknown[]) => void``` to the server emitter constructor, this is not supported on the client side.
+To use multiple servers and clients add in an id parameter to the constructor:
+```ts
+import { NetFunctionsClient as Client } from "@rbxts/net-functions";
 
-It is recommended to not have more than one server side emitter as this can lead to odd behaviour.
-Having multiple client side emitters is fine though.
+const client = new Client(GameFunctions, GameFunctionsReturns, "id1");
+```
 
 ## Example
 ```ts
-import { ServerNetworkEmitter as Server } from "@rbxts/net-eventemitter";
+import { NetFunctionsServer as Server } from "..";
+import { t } from "@rbxts/t";
 
 const events = {
-	playerDead: [t.string],
-}
+	getData: [t.number, t.boolean] as const,
+};
 
-const invalidArgsHandler = (event, player, args) => {
-	print(`Player ${player.Name} sent invalid arguments to event ${event}!`);
-}
+const eventsReturns = {
+	getData: t.string,
+};
 
-const emitter = new Server(events, invalidArgsHandler);
-
-emitter.emit("playerDead", "Mixu_78");
+const server = new Server(events, eventsReturns, "main");
+server.on("getData", (player, number, boolean) => {
+	return `${number}: ${boolean}`;
+});
 ```
 ```ts
-import { ClientNetworkEmitter as Client } from "@rbxts/net-eventemitter";
+import { NetFunctionsClient as Client } from "..";
+import { t } from "@rbxts/t";
 
 const events = {
-	playerDead: [t.string],
-}
+	getData: [t.number, t.boolean] as const,
+};
 
-const emitter = new Client(events);
+const eventsReturns = {
+	getData: t.string,
+};
 
-emitter.on("playerDead", (player) => print(`${player} died!`));
+const client = new Client(events, eventsReturns, "main");
+
+const data = client.invoke("getData", 0, true);
+print(`Data: "${data}"`);
 ```
